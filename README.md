@@ -5,7 +5,9 @@ A Fish shell plugin that clears the command line input when you rapidly press th
 ## Features
 
 - **Configurable threshold**: Set how many escape presses are needed (default: 3)
-- **Timing control**: Configure the time window for detecting rapid presses (default: 1000ms)  
+- **Timing control**: Configure the time window for detecting rapid presses (default: 1000ms)
+- **Multiple trigger modes**: Choose between escape, alt-escape, or ctrl-l key bindings
+- **Safe multiline handling**: Properly cancels operations before clearing complex inputs
 - **Clean integration**: Uses Fish's native key binding system
 - **Easy configuration**: Simple command-line configuration interface
 - **Proper cleanup**: Automatically removes bindings and variables on uninstall
@@ -68,6 +70,13 @@ __multi_escape_config --timeout 500    # 500ms window
 __multi_escape_config --timeout 2000   # 2 second window
 ```
 
+### Change trigger mode
+```fish
+__multi_escape_config --mode escape      # Default: Escape key
+__multi_escape_config --mode alt-escape  # Alt+Escape (recommended for safety)
+__multi_escape_config --mode ctrl-l      # Ctrl+L (alternative option)
+```
+
 
 ### Reset to defaults
 ```fish
@@ -85,6 +94,7 @@ The following global variables control the plugin behavior:
 
 - `multi_escape_threshold`: Number of presses needed (1-10, default: 3)
 - `multi_escape_timeout_ms`: Time window in milliseconds (100-5000, default: 1000)
+- `multi_escape_mode`: Trigger mode (escape, alt-escape, ctrl-l, default: escape)
 
 
 ## Uninstallation
@@ -118,10 +128,17 @@ __multi_escape_init
 ```
 
 ### Conflicts with other escape key bindings
-The plugin binds to the raw escape key. If you have other plugins that also bind escape, there may be conflicts. Check your bindings with:
+The plugin binds to the escape key by default. If you have other plugins that also bind escape, there may be conflicts. You can avoid this by using alternative trigger modes:
+```fish
+__multi_escape_config --mode alt-escape  # Use Alt+Escape instead
+__multi_escape_config --mode ctrl-l      # Use Ctrl+L instead
+```
+
+Check your current bindings with:
 ```fish
 bind | grep escape
 ```
+
 
 
 ## License
