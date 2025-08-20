@@ -1,5 +1,5 @@
 function __multi_escape_config --description "Configure multi-escape clear plugin settings"
-    argparse 't/threshold=' 'o/timeout=' 'r/reset' 's/status' 'h/help' -- $argv
+    argparse 't/threshold=' 'o/timeout=' 'm/mode=' 'r/reset' 's/status' 'h/help' -- $argv
     or return 1
     
     if set -q _flag_help
@@ -10,6 +10,7 @@ function __multi_escape_config --description "Configure multi-escape clear plugi
         echo "Options:"
         echo "  -t, --threshold NUM    Set escape press threshold (1-10, default: 3)"
         echo "  -o, --timeout MS       Set timeout in milliseconds (100-5000, default: 1000)"
+        echo "  -m, --mode MODE        Set trigger mode: escape (default), alt-escape, ctrl-l"
         echo ""
         echo "  -r, --reset            Reset all settings to defaults"
         echo "  -s, --status           Show current settings"
@@ -18,6 +19,7 @@ function __multi_escape_config --description "Configure multi-escape clear plugi
         echo "Examples:"
         echo "  __multi_escape_config --threshold 2      # Require only 2 presses"
         echo "  __multi_escape_config --timeout 500      # Set 500ms timeout"
+        echo "  __multi_escape_config --mode alt-escape  # Use Alt+Esc instead"
         echo ""
         echo "  __multi_escape_config --reset            # Reset to defaults"
         return 0
@@ -26,6 +28,7 @@ function __multi_escape_config --description "Configure multi-escape clear plugi
     if set -q _flag_reset
         set -g multi_escape_threshold 3
         set -g multi_escape_timeout_ms 1000
+        set -g multi_escape_mode escape
         __multi_escape_init
         echo "✓ Settings reset to defaults"
         return 0
@@ -55,14 +58,41 @@ function __multi_escape_config --description "Configure multi-escape clear plugi
         end
     end
     
+    if set -q _flag_mode
+        switch $_flag_mode
+            case escape
+                set -g multi_escape_mode escape
+                echo "✓ Mode set to: escape key (default)"
+                __multi_escape_init
+            case alt-escape
+                set -g multi_escape_mode alt-escape
+                echo "✓ Mode set to: Alt+Escape"
+                __multi_escape_init
+            case ctrl-l
+                set -g multi_escape_mode ctrl-l
+                echo "✓ Mode set to: Ctrl+L"
+                __multi_escape_init
+            case '*'
+                echo "✗ Error: Invalid mode '$_flag_mode'. Valid modes: escape, alt-escape, ctrl-l"
+                return 1
+        end
+    end
     
     if set -q _flag_status; or test (count $argv) -eq 0
         echo "Multi-Escape Clear Plugin Status:"
         echo ""
         echo "  Threshold: $multi_escape_threshold presses"
         echo "  Timeout: $multi_escape_timeout_ms ms"
+        echo "  Mode: $multi_escape_mode"
         echo "  Current count: $multi_escape_count"
         echo ""
-        echo "Usage: Press Esc $multi_escape_threshold times within $multi_escape_timeout_ms ms to clear input"
+        switch $multi_escape_mode
+            case escape
+                echo "Usage: Press Esc $multi_escape_threshold times within $multi_escape_timeout_ms ms to clear input"
+            case alt-escape
+                echo "Usage: Press Alt+Esc $multi_escape_threshold times within $multi_escape_timeout_ms ms to clear input"
+            case ctrl-l
+                echo "Usage: Press Ctrl+L $multi_escape_threshold times within $multi_escape_timeout_ms ms to clear input"
+        end
     end
 end

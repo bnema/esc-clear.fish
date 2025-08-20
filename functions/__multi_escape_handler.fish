@@ -24,12 +24,15 @@ function __multi_escape_handler --description "Handle multiple escape key presse
     
     # Check if we've reached the threshold
     if test $multi_escape_count -ge $multi_escape_threshold
-        # Clear the command line
+        # First cancel any pending operations (handles multiline/complex inputs properly)
+        commandline -f cancel-commandline
+        # Then clear the command line completely
         commandline -r ""
         set -g multi_escape_count 0
         # Force a proper repaint
         commandline -f repaint
     end
+    # If we haven't reached threshold, do nothing (default Fish escape behavior)
     
     # No visual feedback - it's too problematic with Fish's limitations
     # The feature works silently
